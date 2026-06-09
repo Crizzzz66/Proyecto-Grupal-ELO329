@@ -30,24 +30,32 @@ float evaluar(const vector<vector<int>> &cursos_semestre, const vector<int> &cre
  * @param cursos_semestre Cursos asignados a cada semestre
  * @param creditos_semestre Créditos asignados a cada semestre
  * @param requisito Mapa de los requisitos de cada curso
- * @param p Total de semestres
+ * @param x Semestre en que se asigna cada curso
  * @param a Créditos mínimos por semestre
  * @param b Créditos máximos por semestre
  * @param c Cursos mínimos por semestre
  * @param d Cursos máximos por semestre
  * @return true Si la malla es válida, false sino
  */
-bool validar(const vector<vector<int>> &cursos_semestre, const vector<int> &creditos_semestre, const vector<int> &requisito, int p, int a, int b, int c, int d){
+int validar(const vector<vector<int>> &cursos_semestre, const vector<int> &creditos_semestre, const vector<int> &requisito, const vector<int> &x, int a, int b, int c, int d){
+    int p = cursos_semestre.size();
     for(int i = 0; i < p; i++){
-        if (creditos_semestre[i] < a || creditos_semestre[i] > b)
-            return false;
-        if (cursos_semestre[i].size() < c || cursos_semestre[i].size() > d)
-            return false;
-        for(int j = cursos_semestre[i].size() - 1; j >= 0; j--)
-            if (requisito[cursos_semestre[i][j]] >= i)
-                return false;
+        if (creditos_semestre[i] < a || creditos_semestre[i] > b){
+            cout << "Validación fallida en semestre " << i + 1 << " por créditos" << endl;
+            return i + 1;
+        }
+        int len = cursos_semestre[i].size();
+        if (len < c || len > d){
+            cout << "Validación fallida en semestre " << i + 1 << " por número de asignaturas" << endl;
+            return p + i + 1;
+        }
+        for(int j = 0; j < len; j++)
+            if (requisito[cursos_semestre[i][j]] != -1 && x[requisito[cursos_semestre[i][j]]] >= i){
+                cout << "Validación fallida en semestre " << i + 1 << " ramo " << cursos_semestre[i][j] << " por requisitos" << endl;
+                return 2 * p + i + 1;
+            }
     }
-    return true;
+    return 0;
 }
 /**
  * @brief Escribe toda la malla creada a la consola
@@ -80,6 +88,12 @@ void print_malla(const vector<vector<int>> &cursos_semestre, const vector<string
     }
 }
 
+void print_requisitos(const vector<int> &requisito, const vector<string> &cursos){
+    for(int i = requisito.size() - 1; i >= 0; i--)
+        if (requisito[i] != -1)
+            cout << "<" << cursos[i] << ", " << cursos[requisito[i]] << ">" << endl;
+}
+
 int main(){
     /*---------------------------------------------------------LEER ARCHIVO------------------------------------------------------
         int p = Número de semestres
@@ -87,11 +101,11 @@ int main(){
         int b = Créditos máximos por semestre
         int c = Número de asignaturas mínimo por semestre
         int d = Número de asignaturas máximo por semestre
-        vector<string> = cursos = Nombre de la asignatura
-        vector<int> = creditos = Créditos de la asignatura
-        vector<int> = requisito = Índice del prerrequisito de la asignatura (-1 sin prerrequisito)
+        vector<string> cursos = Nombre de la asignatura
+        vector<int> creditos = Créditos de la asignatura
+        vector<int> requisito = Índice del prerrequisito de la asignatura (-1 sin prerrequisito)
     */
-    string filename = "input.txt";
+    string filename = "bacp8.txt";
     //cin >> filename;
     ifstream file(filename);
     if (!file.is_open()){
@@ -147,7 +161,7 @@ int main(){
                 file >> nn;
                 nn = nn.substr(0, nn.size() - 2);
                 for(int j = 0; j < cursos_total; j++)
-                    if (cursos[i] == nn){
+                    if (cursos[j] == nn){
                         requisito[i] = j;
                         post_requisito[j].push_back(i);
                         break;
@@ -157,13 +171,16 @@ int main(){
     }
     //cout << "Prerequisitos: " << requisito.size() << endl;
     file.close();
+    
+    //print_requisitos(requisito, cursos);
+    
     /*---------------------------------------------------------Solución Inicial-----------------------------------------------------
         Representación x[i] = Semestre en que se dicta la asignatura i
         Greedy:
-            Se calcula la cantida promedio de cursos que debería tener cada semestre.
-            Si un ramo requiere de otro que está en el semestre actual j, se aumenta el iterador j.
-            Si un semestre ya tiene tope de créditos o de cursos o si se pasa del promedio de cursos por semestre, se aumenta el iterador j.
-            Se asigna el ramo al semestre j.
+            Se calcula la cantida promedio de cursos y créditos que debería tener cada semestre.
+            Cada ramo se intenta asignar a cada semestre considerando como límites los cursos y créditos PROMEDIO.
+            Si no se pudo asignar un curso y los cursos o créditos promedio son menores a los límites rígidos, estos se incrementan.
+            Si los cursos o créditos promedio llegan al límite rígido, el Greedy falla en encontrar una solición inicial válida.
         
         Además, se incluyen algunas variables redundantes para aumentar la eficiencia:
             int cursos_total = cursos.len()
@@ -179,21 +196,36 @@ int main(){
     vector<int> creditos_semestre(p, 0);
     vector<vector<int>> cursos_semestre(p);
     auto start = chrono::steady_clock::now();//Iniciar timer
-    for(int i = 0, j = 0; i < cursos_total; i++){
-        if (requisito[i] == -1 || x[requisito[i]] < j){
-            if (creditos_semestre[j] + creditos[i] > b || cursos_semestre[j].size() > cursos_promedio || cursos_semestre[j].size() >= d)
-                cursos_promedio = (cursos_total - i) / (p - ++j);
-            x[i] = j;
-            creditos_semestre[j] += creditos[i];
-            cursos_semestre[j].push_back(i);
+    int jmin = 0;
+    for(int i = 0; i < cursos_total; i++){
+        bool flag = true;
+        for(int j = jmin; j < p; j++){
+            if ((requisito[i] == -1 || x[requisito[i]] < j) && creditos_semestre[j] + creditos[i] <= creditos_promedio && cursos_semestre[j].size() < cursos_promedio){
+                x[i] = j;
+                creditos_semestre[j] += creditos[i];
+                cursos_semestre[j].push_back(i);
+                flag = false;
+                if (creditos_semestre[j] == b || cursos_semestre[j].size() == d)
+                    jmin++;
+                break;
+            }
         }
-        else
-            cursos_promedio = (cursos_total - i--) / (p - ++j);
+        if (flag){
+            if (cursos_promedio < d)
+                cursos_promedio++;
+            if (creditos_promedio < b)
+                creditos_promedio++;
+            else{
+                cout << "No se pudo construir una solución inicial" << endl;
+                return 1;
+            }
+        }
     }
+    creditos_promedio = creditos_total / p;
     auto end = chrono::steady_clock::now();//Terminar timer
-    cout << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
+    cout << "Tiempo de generación Greedy: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
     cout << "MSE: " << evaluar(cursos_semestre, creditos, p, creditos_promedio) << endl;
-    cout << "Valido: " << validar(cursos_semestre, creditos_semestre, requisito, p, a, b, c, d) << endl;
+    cout << "Es válido? " << (validar(cursos_semestre, creditos_semestre, requisito, x, a, b, c, d) ? "No" : "Sí") << endl;
     print_malla(cursos_semestre, cursos, creditos, false);
     /*---------------------------------------------------------Métodos de Reparación-------------------------------------------------------------
         Hill CLimbing:
@@ -208,6 +240,7 @@ int main(){
     int MAX_ITER = 100;
     start = chrono::steady_clock::now();//Iniciar timer
     for(int iter = 0; iter < MAX_ITER; iter++){
+        bool stable = true;
         bool flag = false;
         for(int i = 0; i < cursos_total; i++){
             flag = false;
@@ -268,14 +301,13 @@ int main(){
             if (flag)
                 break;
         }
-        if (flag)
-            continue;
-        break;
+        if (stable)
+            break;
     }
     end = chrono::steady_clock::now();//Terminar timer
     cout << "Tiempo de ejecución: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
     cout << "MSE: " << evaluar(cursos_semestre, creditos, p, creditos_promedio) << endl;
-    //cout << "Valido: " << validar(cursos_semestre, creditos_semestre, requisito, p, a, b, c, d) << endl;
+    cout << "Es válido? " << (validar(cursos_semestre, creditos_semestre, requisito, x, a, b, c, d) ? "No" : "Sí") << endl;
     print_malla(cursos_semestre, cursos, creditos, true);
     return 0;
 }
