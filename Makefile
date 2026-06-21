@@ -8,4 +8,4 @@ $(TARGET): $(SRC)
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET).exe *.o

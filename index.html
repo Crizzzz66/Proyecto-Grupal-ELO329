@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INF295 &mdash; Optimización de Malla Curricular</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #222; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+      background: #1a2340; color: #cdd6f0; padding: 32px 0; overflow-y: auto;
+      z-index: 100;
+    }
+    nav h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;
+              color: #7a8bbf; padding: 0 24px 16px; border-bottom: 1px solid #2e3a5c; }
+    nav ul { list-style: none; margin-top: 16px; }
+    nav ul li a {
+      display: block; padding: 10px 24px; color: #b0bde0; text-decoration: none;
+      font-size: 0.88rem; transition: background 0.2s, color 0.2s;
+    }
+    nav ul li a:hover { background: #243060; color: #fff; }
+    nav ul li.active a { background: #2e4bbd; color: #fff; border-left: 3px solid #5b8cff; }
+
+    /* MAIN */
+    main { margin-left: 220px; padding: 48px 56px; max-width: 1100px; }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1a2340, #2e4bbd);
+      color: #fff; padding: 48px 56px; margin-left: 220px;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; }
+    header p  { margin-top: 8px; font-size: 1rem; opacity: 0.8; }
+    header .meta { margin-top: 20px; font-size: 0.82rem; opacity: 0.6; }
+
+    /* SECTIONS */
+    section { margin-bottom: 64px; }
+    section h2 {
+      font-size: 1.5rem; color: #1a2340; border-bottom: 3px solid #2e4bbd;
+      padding-bottom: 10px; margin-bottom: 24px;
+    }
+    section h3 { font-size: 1.1rem; color: #2e4bbd; margin: 28px 0 10px; }
+    section p  { line-height: 1.75; margin-bottom: 14px; text-align: justify; }
+    section ul, section ol { padding-left: 24px; margin-bottom: 14px; line-height: 1.8; }
+
+    /* CARDS */
+    .card {
+      background: #fff; border: 1px solid #dce3f0; border-radius: 8px;
+      padding: 24px 28px; margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .card h3 { margin-top: 0; }
+    .tag {
+      display: inline-block; background: #e8eeff; color: #2e4bbd;
+      border-radius: 4px; padding: 2px 10px; font-size: 0.78rem;
+      font-weight: 600; margin-bottom: 10px;
+    }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    th { background: #1a2340; color: #fff; padding: 12px 16px; text-align: left; font-size: 0.85rem; }
+    td { padding: 10px 16px; border-bottom: 1px solid #edf0f7; font-size: 0.9rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f7f9ff; }
+
+    /* CODE */
+    pre {
+      background: #1e2640; color: #c9d1e8; padding: 20px 24px; border-radius: 8px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin-bottom: 20px;
+    }
+
+    /* MERMAID */
+    .mermaid-wrap {
+      background: #fff; border: 1px solid #dce3f0; border-radius: 8px;
+      padding: 24px; margin-bottom: 28px; overflow-x: auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .mermaid-wrap p.caption { font-size: 0.82rem; color: #666; margin-top: 12px; text-align: center; }
+
+    /* PLACEHOLDER IMAGEN */
+    .img-placeholder {
+      background: #eef1f9; border: 2px dashed #7a8bbf; border-radius: 8px;
+      padding: 48px 24px; text-align: center; color: #5a6a99; margin-bottom: 20px;
+    }
+    .img-placeholder span { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .img-placeholder p { font-size: 0.9rem; margin: 0; }
+
+    /* BADGE */
+    .badge-ok  { display:inline-block; background:#d4edda; color:#155724; border-radius:4px; padding:2px 10px; font-size:0.8rem; font-weight:600; }
+    .badge-warn{ display:inline-block; background:#fff3cd; color:#856404; border-radius:4px; padding:2px 10px; font-size:0.8rem; font-weight:600; }
+
+    /* FOOTER */
+    footer { margin-left: 220px; background: #1a2340; color: #7a8bbf; text-align: center; padding: 20px; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAVEGACIÓN LATERAL -->
+<nav>
+  <h2>INF295</h2>
+  <ul>
+    <li><a href="#descripcion">1. Descripción</a></li>
+    <li><a href="#analisis">2. Análisis</a></li>
+    <li><a href="#requerimientos">3. Requerimientos</a></li>
+    <li><a href="#diseno">4. Diseño UML</a></li>
+    <li><a href="#resultados">5. Resultados</a></li>
+  </ul>
+</nav>
+
+<!-- ENCABEZADO -->
+<header>
+  <h1>Optimización de Malla Curricular</h1>
+  <p>Proyecto grupal &mdash; Informe Técnico</p>
+  <div class="meta">INF295 &bull; C++17 &bull; Metaheurísticas &bull; Orientado a Objetos</div>
+</header>
+
+<main>
+
+  <!-- ============================================================ -->
+  <!-- 1. DESCRIPCIÓN DEL PROBLEMA                                  -->
+  <!-- ============================================================ -->
+  <section id="descripcion">
+    <h2>1. Descripción del Problema</h2>
+
+    <p>
+      En las instituciones de educación superior, la distribución de asignaturas a lo largo de los
+      semestres de un plan de estudios representa un desafío de optimización combinatoria de alta
+      complejidad. El objetivo central es asignar cada curso a exactamente un semestre, garantizando
+      que la carga académica (medida en créditos) quede equilibrada entre todos los períodos del plan.
+    </p>
+    <p>
+      La dificultad radica en respetar simultáneamente tres tipos de restricciones: los
+      <strong>pre-requisitos</strong> entre asignaturas, los <strong>límites de créditos</strong>
+      por semestre (mínimo y máximo), y los <strong>límites de cantidad de ramos</strong> por semestre.
+      Cuando estas restricciones se combinan, el espacio de soluciones factibles se reduce drásticamente,
+      haciendo inviable una búsqueda exhaustiva para instancias reales.
+    </p>
+    <p>
+      Este problema corresponde al <em>Balanced Academic Curriculum Problem</em> (BACP), un problema
+      NP-difícil ampliamente estudiado en optimización combinatoria. La métrica de calidad utilizada
+      es el <strong>Error Cuadrático Medio (MSE)</strong> entre los créditos de cada semestre y el
+      promedio global: a menor MSE, más equilibrada es la distribución académica.
+    </p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 2. ANÁLISIS DEL PROBLEMA                                     -->
+  <!-- ============================================================ -->
+  <section id="analisis">
+    <h2>2. Análisis del Problema</h2>
+
+    <h3>Definición del sistema</h3>
+    <p>
+      El sistema recibe como entrada un archivo de texto con la descripción completa de un plan
+      de estudios: número de semestres, restricciones de carga académica, lista de asignaturas con
+      sus créditos y las relaciones de pre-requisito entre ellas. A partir de estos datos, el sistema
+      genera una <strong>malla curricular</strong> óptima, asignando cada asignatura a un semestre
+      de forma que se minimice el desequilibrio de créditos.
+    </p>
+
+    <h3>Entidades participantes</h3>
+
+    <div class="card">
+      <span class="tag">Entidad de Dominio</span>
+      <h3>Curso</h3>
+      <p>
+        Representa una asignatura del plan de estudios. Encapsula su nombre (código), créditos, la
+        lista de cursos que son prerequisito suyo y la lista de cursos que dependen de él. Calcula
+        y almacena el rango de semestres en que puede ser legalmente ubicado (<code>semestre_min</code>,
+        <code>semestre_max</code>), derivado de la cadena de dependencias del plan.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="tag">Entidad de Dominio</span>
+      <h3>Semestre</h3>
+      <p>
+        Representa un período académico dentro del plan. Agrega los cursos asignados a él y mantiene
+        actualizado el total de créditos de forma incremental (sin necesidad de recalcular la suma
+        completa en cada evaluación). Expone operaciones <code>agregarCurso</code> y
+        <code>eliminarCurso</code> que garantizan la consistencia del total de créditos.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="tag">Gestor Central</span>
+      <h3>MallaCurricular</h3>
+      <p>
+        Clase central del dominio. Posee y coordina todos los <code>Curso</code> y
+        <code>Semestre</code> del plan. Implementa la función objetivo (<code>evaluarFuncionObjetivo</code>),
+        la validación de restricciones (<code>validarRestricciones</code>), la construcción de
+        soluciones iniciales (<code>construirGreedy</code>) y el movimiento vecinal
+        (<code>realizarMovimiento</code>). Es la única clase que puede modificar el estado de
+        la solución; los algoritmos la invocan a través de su interfaz pública.
+      </p>
+    </div>
+
+    <div class="card">
+      <span class="tag">Algoritmos</span>
+      <h3>AlgoritmoOptimizacion / HillClimbingOpt / AlgoritmoEvolutivoOpt</h3>
+      <p>
+        La clase abstracta <code>AlgoritmoOptimizacion</code> define la interfaz común con el método
+        virtual puro <code>optimizar()</code>. <code>HillClimbingOpt</code> implementa búsqueda local
+        de mejora estricta. <code>AlgoritmoEvolutivoOpt</code> implementa una búsqueda poblacional
+        con selección proporcional al fitness y mutación por movimiento vecinal. Ambas clases reciben
+        una referencia a la <code>MallaCurricular</code> sobre la que operan.
+      </p>
+    </div>
+
+    <h3>Interacciones con el medio externo</h3>
+    <table>
+      <tr><th>Componente externo</th><th>Tipo de interacción</th><th>Descripción</th></tr>
+      <tr><td>Archivos <code>*.txt</code></td><td>Entrada</td><td>Instancias del problema (BACP y UTFSM)</td></tr>
+      <tr><td>Consola (stdout)</td><td>Salida</td><td>Progreso del Algoritmo Evolutivo en tiempo real</td></tr>
+      <tr><td><code>output.txt</code></td><td>Salida</td><td>Resultados de HC y AE: métricas, validez y malla completa</td></tr>
+    </table>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 3. DEFINICIÓN DE REQUERIMIENTOS (CASOS DE USO)               -->
+  <!-- ============================================================ -->
+  <section id="requerimientos">
+    <h2>3. Definición de Requerimientos</h2>
+
+    <!-- CU-01 -->
+    <div class="card">
+      <span class="tag">CU-01</span>
+      <h3>Carga y Validación de Instancia Curricular</h3>
+      <p><strong>Actor:</strong> Usuario del sistema.</p>
+      <p><strong>Precondición:</strong> Existe un archivo <code>*.txt</code> con formato válido en el directorio de trabajo.</p>
+      <p><strong>Flujo principal:</strong></p>
+      <ol>
+        <li>El usuario ejecuta el programa indicando el archivo de entrada en <code>main.cpp</code>.</li>
+        <li>El sistema parsea los parámetros <code>p, a, b, c, d</code> y crea la <code>MallaCurricular</code>.</li>
+        <li>Se cargan los cursos con sus créditos y relaciones de pre-requisito.</li>
+        <li>Se calculan los rangos de semestre válido (<code>semestre_min</code>, <code>semestre_max</code>) para cada curso.</li>
+        <li>El sistema queda listo para recibir algoritmos de optimización.</li>
+      </ol>
+      <p><strong>Postcondición:</strong> Objeto <code>MallaCurricular</code> completamente configurado e inicializado.</p>
+      <p><strong>Clases involucradas:</strong> <code>MallaCurricular::cargarDesdeArchivo()</code>, <code>Curso</code>.</p>
+    </div>
+
+    <!-- CU-02 -->
+    <div class="card">
+      <span class="tag">CU-02</span>
+      <h3>Optimización Local por Búsqueda Vecinal (Hill Climbing)</h3>
+      <p><strong>Actor:</strong> Sistema (invocado desde <code>main()</code>).</p>
+      <p><strong>Precondición:</strong> La <code>MallaCurricular</code> ha sido cargada (CU-01).</p>
+      <p><strong>Flujo principal:</strong></p>
+      <ol>
+        <li>El sistema construye una solución inicial válida mediante el algoritmo greedy.</li>
+        <li>En cada iteración, se evalúa el <em>delta de MSE</em> para mover cada curso a otro semestre válido.</li>
+        <li>Si algún movimiento reduce el MSE, se aplica inmediatamente y se contabiliza.</li>
+        <li>Si ningún movimiento mejora el MSE (convergencia local) o se alcanza el límite de iteraciones, se detiene.</li>
+        <li>El sistema registra: número de movimientos, tiempo de ejecución, MSE final y validez.</li>
+      </ol>
+      <p><strong>Postcondición:</strong> La <code>MallaCurricular</code> contiene la mejor solución encontrada por HC.</p>
+      <p><strong>Clases involucradas:</strong> <code>HillClimbingOpt</code>, <code>MallaCurricular::realizarMovimiento()</code>, <code>MallaCurricular::evaluarFuncionObjetivo()</code>.</p>
+    </div>
+
+    <!-- CU-03 -->
+    <div class="card">
+      <span class="tag">CU-03</span>
+      <h3>Optimización Global Metaheurística (Algoritmo Evolutivo)</h3>
+      <p><strong>Actor:</strong> Sistema (invocado desde <code>main()</code>).</p>
+      <p><strong>Precondición:</strong> La <code>MallaCurricular</code> ha sido cargada (CU-01).</p>
+      <p><strong>Flujo principal:</strong></p>
+      <ol>
+        <li>El sistema construye una solución greedy y genera 100 copias diversificadas mediante movimientos aleatorios (<code>EstadoMalla</code>).</li>
+        <li>En cada generación, se evalúa el MSE de cada individuo de la población.</li>
+        <li>Se aplica selección proporcional al fitness (ruleta): individuos con menor MSE tienen mayor probabilidad de reproducirse.</li>
+        <li>Cada individuo de la nueva generación es mutado con un movimiento vecinal.</li>
+        <li>Al inicio la mutación es aleatoria; conforme avanza la evolución, se vuelve inteligente (basada en delta de MSE).</li>
+        <li>El proceso se repite hasta convergencia o hasta 1000 generaciones.</li>
+        <li>El mejor individuo es restaurado en la <code>MallaCurricular</code> y se reportan métricas.</li>
+      </ol>
+      <p><strong>Postcondición:</strong> La <code>MallaCurricular</code> contiene la mejor solución encontrada por el AE.</p>
+      <p><strong>Clases involucradas:</strong> <code>AlgoritmoEvolutivoOpt</code>, <code>EstadoMalla</code>, <code>MallaCurricular::guardarEstado()</code>, <code>MallaCurricular::cargarEstado()</code>.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. DISEÑO UML                                                -->
+  <!-- ============================================================ -->
+  <section id="diseno">
+    <h2>4. Diseño UML</h2>
+
+    <h3>4.1 Diagrama de Clases</h3>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+classDiagram
+    class Curso {
+        +string nombre
+        +int creditos
+        +vector requisitos
+        +vector post_requisitos
+        +int semestre_min
+        +int semestre_max
+        +getNombre() string
+        +getCreditos() int
+    }
+    class Semestre {
+        +int id
+        +vector cursos_asignados
+        +int total_creditos
+        +agregarCurso(int, int) void
+        +eliminarCurso(int, int) void
+        +calcularTotalCreditos() void
+    }
+    class EstadoMalla {
+        +vector x
+        +vector creditos_semestre
+        +vector cursos_semestre
+    }
+    class MallaCurricular {
+        +int p
+        +int a
+        +int b
+        +int c
+        +int d
+        +float creditos_promedio
+        +int cursos_promedio
+        +vector cursos
+        +vector semestres
+        +vector x
+        +evaluarFuncionObjetivo() double
+        +validarRestricciones() int
+        +imprimirMalla() string
+        +construirGreedy() void
+        +realizarMovimiento(vector, bool) bool
+        +guardarEstado() EstadoMalla
+        +cargarEstado(EstadoMalla) void
+        +evaluarEstado(EstadoMalla) double
+        +cargarDesdeArchivo(string)$ MallaCurricular
+    }
+    class AlgoritmoOptimizacion {
+        <<abstract>>
+        #MallaCurricular malla
+        +optimizar()* void
+    }
+    class HillClimbingOpt {
+        -int max_iter
+        -int contador_movimientos
+        -long tiempo_ms
+        +optimizar() void
+        +getContadorMovimientos() int
+        +getTiempoMs() long
+    }
+    class AlgoritmoEvolutivoOpt {
+        -int AE_instancias
+        -int AE_random_steps
+        -int max_iter
+        -float mejor_valor
+        -long tiempo_ms
+        -weigthed_choose(vector, int) int
+        +optimizar() void
+        +getMejorValor() float
+        +getTiempoMs() long
+    }
+
+    MallaCurricular "1" *-- "p" Semestre : contiene
+    MallaCurricular "1" *-- "n" Curso : contiene
+    MallaCurricular ..> EstadoMalla : usa
+    AlgoritmoOptimizacion o-- MallaCurricular : referencia
+    HillClimbingOpt --|> AlgoritmoOptimizacion : hereda
+    AlgoritmoEvolutivoOpt --|> AlgoritmoOptimizacion : hereda
+    AlgoritmoEvolutivoOpt ..> EstadoMalla : gestiona poblaciones
+      </div>
+      <p class="caption">Figura 1 &mdash; Diagrama de Clases del sistema refactorizado a POO</p>
+    </div>
+
+    <h3>4.2 Diagrama de Secuencia &mdash; CU-02: Hill Climbing</h3>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+sequenceDiagram
+    actor Usuario
+    participant main as main()
+    participant MC as MallaCurricular
+    participant HC as HillClimbingOpt
+
+    Usuario->>main: ejecutar ./programa
+    main->>MC: cargarDesdeArchivo("bacp8.txt")
+    MC-->>main: malla configurada (46 cursos, 8 semestres)
+    main->>HC: new HillClimbingOpt(malla)
+    main->>HC: optimizar()
+    activate HC
+    HC->>MC: construirGreedy()
+    MC-->>HC: solucion inicial valida (MSE alto)
+    loop Hasta convergencia o max_iter=100
+        HC->>MC: realizarMovimiento(flip, inteligente=true)
+        alt delta MSE menor que 0
+            MC-->>HC: false (movimiento aplicado, MSE reducido)
+        else sin mejora posible
+            MC-->>HC: true (convergencia local)
+            HC-->>HC: break
+        end
+    end
+    deactivate HC
+    main->>MC: evaluarFuncionObjetivo()
+    MC-->>main: MSE final
+    main->>MC: validarRestricciones()
+    MC-->>main: 0 (malla valida)
+    main->>MC: imprimirMalla()
+    MC-->>main: string formateada con semestres
+    main-->>Usuario: resultados escritos en output.txt
+      </div>
+      <p class="caption">Figura 2 &mdash; Diagrama de Secuencia para CU-02: Optimización por Hill Climbing</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 5. RESULTADOS Y PRUEBAS                                      -->
+  <!-- ============================================================ -->
+  <section id="resultados">
+    <h2>5. Resultados y Pruebas</h2>
+
+    <h3>5.1 Caso de Prueba 1 &mdash; CU-01: Carga de instancia bacp8.txt</h3>
+    <div class="img-placeholder">
+      <span>&#128247;</span>
+      <p>[PLACEHOLDER PARA IMAGEN &mdash; Captura de consola mostrando la carga exitosa del archivo bacp8.txt]</p>
+    </div>
+    <p>
+      La instancia <code>bacp8.txt</code> define un plan de 8 semestres con 46 asignaturas, con
+      restricciones de entre 10 y 24 créditos por semestre y entre 2 y 10 ramos por semestre.
+      El sistema parsea correctamente los parámetros, construye los objetos <code>Curso</code> con
+      sus relaciones de pre-requisito y calcula el rango de semestres válido para cada asignatura
+      en función de la cadena de dependencias.
+    </p>
+
+    <h3>5.2 Caso de Prueba 2 &mdash; CU-02: Hill Climbing sobre bacp8.txt</h3>
+    <div class="img-placeholder">
+      <span>&#128247;</span>
+      <p>[PLACEHOLDER PARA IMAGEN &mdash; Captura de output.txt mostrando resultado de Hill Climbing: MSE, validez y malla]</p>
+    </div>
+    <p>
+      A partir de la solución greedy inicial (que distribuye los cursos de forma equilibrada
+      pero sin optimizar), el Hill Climbing aplica movimientos de mejora estrictos: en cada
+      iteración evalúa el <em>delta</em> de MSE de mover cada curso a otro semestre válido y
+      aplica el primero que lo reduzca. El proceso converge rápidamente (en 1 movimiento para
+      <code>bacp8.txt</code>), alcanzando un MSE de <strong>11.375</strong> con la malla
+      validada como <span class="badge-ok">Válida</span>. El tiempo de ejecución es menor a 1ms,
+      lo que demuestra la eficiencia de calcular el delta en O(1) en lugar de recalcular el MSE
+      completo en cada evaluación.
+    </p>
+
+    <h3>5.3 Caso de Prueba 3 &mdash; CU-03: Algoritmo Evolutivo sobre bacp8.txt</h3>
+    <div class="img-placeholder">
+      <span>&#128247;</span>
+      <p>[PLACEHOLDER PARA IMAGEN &mdash; Captura de consola mostrando la reducción del MSE por generación en el AE]</p>
+    </div>
+    <div class="img-placeholder">
+      <span>&#128247;</span>
+      <p>[PLACEHOLDER PARA IMAGEN &mdash; Captura de output.txt con resultado del Algoritmo Evolutivo]</p>
+    </div>
+    <p>
+      El Algoritmo Evolutivo genera 100 instancias iniciales diversificadas aplicando 20 movimientos
+      aleatorios a la solución greedy, explorando así distintas zonas del espacio de búsqueda.
+      Durante las generaciones, el MSE decrece progresivamente desde valores iniciales cercanos
+      a <strong>175</strong> hasta un mínimo de <strong>5.375</strong> en la generación 507, antes
+      de estabilizarse en <strong>13.375</strong> como mejor valor final validado
+      <span class="badge-ok">Válido</span>. El mecanismo de selección proporcional concentra
+      gradualmente la población alrededor de los mejores individuos, mientras que la mutación
+      transiciona de aleatoria a inteligente conforme avanza la evolución para explotar las
+      regiones prometedoras del espacio de soluciones.
+    </p>
+
+    <table>
+      <tr>
+        <th>Algoritmo</th><th>Instancia</th><th>MSE final</th>
+        <th>Válido</th><th>Tiempo</th><th>Movimientos / Generaciones</th>
+      </tr>
+      <tr>
+        <td>Hill Climbing</td><td>bacp8.txt</td><td>11.375</td>
+        <td><span class="badge-ok">Sí</span></td><td>&lt; 1 ms</td><td>1 movimiento</td>
+      </tr>
+      <tr>
+        <td>Algoritmo Evolutivo</td><td>bacp8.txt</td><td>13.375</td>
+        <td><span class="badge-ok">Sí</span></td><td>275 ms</td><td>507 generaciones</td>
+      </tr>
+    </table>
+
+    <h3>5.4 Dificultades superadas</h3>
+    <ul>
+      <li>
+        <strong>Refactorización a POO sin romper la lógica algorítmica:</strong> el código original
+        era procedural puro (6 funciones libres con hasta 17 parámetros). La reestructuración en clases
+        exigió identificar correctamente a qué clase pertenecía cada responsabilidad sin alterar los
+        invariantes matemáticos de los algoritmos.
+      </li>
+      <li>
+        <strong>Gestión de estado en el Algoritmo Evolutivo:</strong> el AE requiere mantener 100
+        soluciones en paralelo. Se resolvió con la estructura <code>EstadoMalla</code> que guarda
+        únicamente el estado mutable (asignaciones y créditos), compartiendo los metadatos de los
+        cursos en una sola instancia de <code>MallaCurricular</code>.
+      </li>
+      <li>
+        <strong>Configuración del entorno de compilación en Windows:</strong> g++ de MSYS2 requiere
+        que su directorio esté en el PATH para encontrar las DLLs de soporte. Se resolvió migrando
+        el entorno de trabajo a Ubuntu a través de WSL, donde <code>build-essential</code> configura
+        todo automáticamente.
+      </li>
+      <li>
+        <strong>Firma de 17 parámetros en <code>movimiento()</code>:</strong> la función original
+        recibía todos los vectores como parámetros separados. Al encapsularlos como atributos de
+        <code>MallaCurricular</code>, la nueva firma quedó reducida a 2 parámetros significativos.
+      </li>
+    </ul>
+
+    <h3>5.5 Bugs conocidos</h3>
+    <ul>
+      <li>
+        <span class="badge-warn">Menor</span> El algoritmo greedy puede dejar un curso sin asignar
+        (con <code>x[i] = 0</code> por defecto) cuando no cabe en ningún semestre y los límites
+        ya están al máximo. En la práctica no ocurre con las instancias incluidas porque los cursos
+        están en orden topológico, pero no está protegido para instancias con orden arbitrario.
+      </li>
+      <li>
+        <span class="badge-warn">Menor</span> El cálculo de <code>semestre_max</code> por
+        post-requisitos se realiza en un único pasaje hacia adelante, lo que puede ser inexacto
+        en planes con cadenas de dependencia muy largas que no estén ordenadas topológicamente en
+        el archivo de entrada.
+      </li>
+      <li>
+        <span class="badge-warn">Cosmético</span> El nombre de la función <code>weigthed_choose</code>
+        conserva el error tipográfico del código original (<em>weigthed</em> en lugar de
+        <em>weighted</em>) para mantener trazabilidad con el historial de versiones.
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  INF295 &mdash; Informe generado localmente &bull; Codificación UTF-8 &bull; Navegación con enlaces relativos
+</footer>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+
+  // Resaltar sección activa en nav al hacer scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav ul li');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+    navLinks.forEach(li => {
+      li.classList.remove('active');
+      if (li.querySelector('a').getAttribute('href') === '#' + current) li.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
