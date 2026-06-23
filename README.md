@@ -1,4 +1,4 @@
-# INF295 — Optimización de Malla Curricular
+# ELO329 — DISEÑO Y PROGRAMACIÓN ORIENTADOS A OBJETOS
 
 Proyecto de optimización combinatoria que genera una **malla curricular** equilibrada distribuida en semestres, respetando pre-requisitos y restricciones de créditos y cantidad de asignaturas por semestre. Implementa dos metaheurísticas: Hill Climbing (HC) y Algoritmo Evolutivo (AE).
 
