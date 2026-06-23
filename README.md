@@ -139,4 +139,4 @@ main.cpp
 └── int main()                        Orquestación: carga, ejecuta, reporta
 ```
 
-Para una descripción técnica detallada de cada clase, método y decisión de diseño, consultar [DOCUMENTACION.md](DOCUMENTACION.md).
+
